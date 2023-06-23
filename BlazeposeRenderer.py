@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 from o3d_utils import Visu3D
 import mediapipe_utils as mpu
+import ICMedit as ice
 
 
 
@@ -41,6 +42,10 @@ class BlazeposeRenderer:
         self.show_landmarks = True
         self.show_score = False
         self.show_fps = True
+        self.height1 = ice.get_monitor_height()
+        self.height1 = np.int(self.height1)
+        self.width1 = ice.get_monitor_width()
+        self.width1 = np.int(self.width1)
         
         if rescale is None:
             self.rescale = False
@@ -193,6 +198,10 @@ class BlazeposeRenderer:
             self.tracker.fps.draw(self.frame, orig=(50,50), size=1, color=(240,180,100))
         if self.rescale:
             cv2.namedWindow("Blazepose", cv2.WND_PROP_FULLSCREEN)
+        else:
+            cv2.namedWindow("Blazepose", cv2.WINDOW_NORMAL)
+            cv2.resizeWindow("Blazepose", self.width1, self.height1)
+            cv2.moveWindow("Blazepose",2,20)
         cv2.imshow("Blazepose", self.frame)
         if self.output:
             self.output.write(self.frame)
