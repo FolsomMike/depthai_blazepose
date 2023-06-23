@@ -36,7 +36,8 @@ class BlazeposeRenderer:
         self.show_3d = show_3d
         self.fram = None
         self.pause = False
-
+        
+    
         # Rendering flags
         self.show_rot_rect = False
         self.show_landmarks = True
@@ -46,11 +47,19 @@ class BlazeposeRenderer:
         self.height1 = np.int(self.height1)
         self.width1 = ice.get_monitor_width()
         self.width1 = np.int(self.width1)
-        
+        self.height1 = 3840
+        self.width1 = 2160
         if rescale is None:
             self.rescale = False
         else:
             self.rescale = rescale
+            
+        if self.rescale:
+            cv2.namedWindow("Blazepose", cv2.WND_PROP_FULLSCREEN)
+        else:
+            cv2.namedWindow("Blazepose", cv2.WINDOW_NORMAL)
+            cv2.resizeWindow("Blazepose", self.width1, self.height1)
+
 
         self.show_xyz_zone = self.show_xyz = self.tracker.xyz = False
 
@@ -196,12 +205,7 @@ class BlazeposeRenderer:
     def waitKey(self, delay=1):
         if self.show_fps:
             self.tracker.fps.draw(self.frame, orig=(50,50), size=1, color=(240,180,100))
-        if self.rescale:
-            cv2.namedWindow("Blazepose", cv2.WND_PROP_FULLSCREEN)
-        else:
-            cv2.namedWindow("Blazepose", cv2.WINDOW_NORMAL)
-            cv2.resizeWindow("Blazepose", self.width1, self.height1)
-            cv2.moveWindow("Blazepose",2,20)
+            #cv2.moveWindow("Blazepose",2,20)
         cv2.imshow("Blazepose", self.frame)
         if self.output:
             self.output.write(self.frame)
