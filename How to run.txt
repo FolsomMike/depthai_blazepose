@@ -1,0 +1,39 @@
+#INSTALL
+
+Open new Terminal
+	mkdir Pose
+	cd Pose
+	sudo apt-get update
+	sudo apt-get upgrade
+	git clone https://github.com/geaxgx/depthai_blazepose.git
+	cd depthai_blazepose
+	python3 -m pip install -r requirements.txt
+	pip install markupsafe==2.0.1 --force-reinstall
+	pip3 install werkzeug==2.0.3
+	
+	!!!MAKE SURE OAK-D LITE IS UNPLUGGED!!!
+	paste entire following command into terminal
+	echo 'SUBSYSTEM=="usb", ATTRS{idVendor}=="03e7", MODE="0666"' | sudo tee /etc/udev/rules.d/80-movidius.rules
+	sudo udevadm control --reload-rules && sudo udevadm trigger
+	
+	Plug Oak-D back into Pi
+	
+#Running
+
+Open new Terminal
+	cd Pose
+	cd depthai_blazepose
+	python3 demo.py -e -xyz --lm_m full -f 20 -i rgb_laconic
+	optional use -headf for line thickness, use a negative value for a filled in head
+	
+	
+	
+#Code Edits
+
+	BlazeposeRenderer.py 
+		-line 43 added = False
+		-line 85-
+	
+	
+	
+	
