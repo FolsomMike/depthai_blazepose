@@ -28,7 +28,9 @@ class BlazeposeRenderer:
     def __init__(self,
                 tracker,
                 show_3d=None,
-                output=None):
+                output=None,
+                headf=None,
+                rescale=None):
         self.tracker = tracker
         self.show_3d = show_3d
         self.fram = None
@@ -39,8 +41,13 @@ class BlazeposeRenderer:
         self.show_landmarks = True
         self.show_score = False
         self.show_fps = True
+        
+        if rescale is None:
+            self.rescale = False
+        else:
+            self.rescale = rescale
 
-        self.show_xyz_zone = self.show_xyz = self.tracker.xyz
+        self.show_xyz_zone = self.show_xyz = self.tracker.xyz = False
 
         if self.show_3d == "mixed" and not self.tracker.xyz:
             print("'mixed' 3d visualization needs the tracker to be in 'xyz' mode !")
@@ -65,6 +72,11 @@ class BlazeposeRenderer:
             self.vis3d.create_grid([-half_length,1,grid_depth],[half_length,1,grid_depth],[half_length,-1,grid_depth],[-half_length,-1,grid_depth],2*half_length,2) # Wall
             self.vis3d.create_camera()
             self.vis3d.init_view()
+        
+        if headf is None:
+            self.headf = 2
+        else:
+            self.headf = np.int(headf)
 
         if output is None:
             self.output = None
@@ -78,23 +90,31 @@ class BlazeposeRenderer:
     def draw_landmarks(self, body):
         if self.show_rot_rect:
             cv2.polylines(self.frame, [np.array(body.rect_points)], True, (0,255,255), 2, cv2.LINE_AA)
-        if self.show_landmarks:                
+        if self.show_landmarks:
             list_connections = LINES_BODY
             lines = [np.array([body.landmarks[point,:2] for point in line]) for line in list_connections if self.is_present(body, line[0]) and self.is_present(body, line[1])]
-            cv2.polylines(self.frame, lines, False, (255, 180, 90), 2, cv2.LINE_AA)
+            cv2.polylines(self.frame, lines[3:], False, (255, 180, 90), 2, cv2.LINE_AA)
+            #USER CODE
+                
+            if len(lines) >= 13:
+                headscaler = (((lines[11][0][0] - lines[12][0][0])**2 + (lines[11][0][1] - lines[12][0][1])**2)**0.5)/5
+                headscaler1 = np.int(headscaler)
+                cv2.circle(self.frame,(lines[0][0][0],lines[0][0][1]), headscaler1, (255,255,255), self.headf)
+                    
             
-            # for i,x_y in enumerate(body.landmarks_padded[:,:2]):
+            #for i,x_y in enumerate(body.landmarks_padded[:,:2]):
             for i,x_y in enumerate(body.landmarks[:self.tracker.nb_kps,:2]):
                 if self.is_present(body, i):
                     if i > 10:
                         color = (0,255,0) if i%2==0 else (0,0,255)
+                        cv2.circle(self.frame, (x_y[0], x_y[1]), 4, color, -11)
                     elif i == 0:
                         color = (0,255,255)
                     elif i in [4,5,6,8,10]:
                         color = (0,255,0)
                     else:
                         color = (0,0,255)
-                    cv2.circle(self.frame, (x_y[0], x_y[1]), 4, color, -11)
+                    
         if self.show_score:
             h, w = self.frame.shape[:2]
             cv2.putText(self.frame, f"Landmark score: {body.lm_score:.2f}", 
@@ -171,6 +191,8 @@ class BlazeposeRenderer:
     def waitKey(self, delay=1):
         if self.show_fps:
             self.tracker.fps.draw(self.frame, orig=(50,50), size=1, color=(240,180,100))
+        if self.rescale:
+            cv2.namedWindow("Blazepose", cv2.WND_PROP_FULLSCREEN)
         cv2.imshow("Blazepose", self.frame)
         if self.output:
             self.output.write(self.frame)

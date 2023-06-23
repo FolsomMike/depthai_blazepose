@@ -35,7 +35,10 @@ parser_renderer.add_argument('-3', '--show_3d', choices=[None, "image", "world",
                     help="Display skeleton in 3d in a separate window. See README for description.")
 parser_renderer.add_argument("-o","--output",
                     help="Path to output video file")
- 
+parser_renderer.add_argument('-headf', '--headf',
+                    help="head line thickness, use negative values for a filled in head")
+parser_renderer.add_argument('-resc','--rescale', action="store_true",
+                    help="allow rescaling of window natively")
 
 args = parser.parse_args()
 
@@ -58,7 +61,9 @@ tracker = BlazeposeDepthai(input_src=args.input,
 renderer = BlazeposeRenderer(
                 tracker, 
                 show_3d=args.show_3d, 
-                output=args.output)
+                output=args.output,
+                headf=args.headf,
+                rescale=args.rescale)
 
 while True:
     # Run blazepose on next frame
